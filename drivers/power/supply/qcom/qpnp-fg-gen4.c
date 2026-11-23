@@ -5928,14 +5928,14 @@ static int fg_gen4_parse_dt(struct fg_gen4_chip *chip)
 		if (rc < 0) {
 			dev_err(fg->dev, "reg not specified in node %s, rc=%d\n",
 				child->full_name, rc);
-			return rc;
+			goto out;
 		}
 
 		rc = fg_read(fg, base + PERPH_SUBTYPE_REG, &subtype, 1);
 		if (rc < 0) {
 			dev_err(fg->dev, "Couldn't read subtype for base %d, rc=%d\n",
 				base, rc);
-			return rc;
+			goto out;
 		}
 
 		switch (subtype) {
@@ -5954,7 +5954,8 @@ static int fg_gen4_parse_dt(struct fg_gen4_chip *chip)
 		default:
 			dev_err(fg->dev, "Invalid peripheral subtype 0x%x\n",
 				subtype);
-			return -ENXIO;
+			rc = -ENXIO;
+			goto out;
 		}
 	}
 
@@ -6210,6 +6211,10 @@ static int fg_gen4_parse_dt(struct fg_gen4_chip *chip)
 	}
 
 	return 0;
+
+out:
+	of_node_put(child);
+	return rc;
 }
 
 #define SOC_WORK_MS     20000
